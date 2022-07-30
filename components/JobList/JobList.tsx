@@ -13,7 +13,6 @@ const JobListContainer = ({ children }: { children: React.ReactNode }) => (
     columnGap={"15px"}
     alignItems="flex-start"
     my="30px"
-   
   >
     {children}
   </Container>
@@ -25,8 +24,8 @@ function JobList() {
   if (!jobs)
     return (
       <JobListContainer>
-        {Array.from(new Array(6).keys()).map((_) => (
-          <LoadingJobCard />
+        {Array.from(new Array(6).keys()).map((i) => (
+          <LoadingJobCard key={`loading_ui_${i}`} />
         ))}
       </JobListContainer>
     );
