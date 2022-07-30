@@ -10,7 +10,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
         w="100%"
         minH={"160px"}
         bgImage={"/header.png"}
-        backgroundSize="contain"
+        backgroundSize="100% 100%"
         bgRepeat={"no-repeat"}
         alignItems="center"
       >
@@ -19,7 +19,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
           justifyContent={"space-between"}
           width={"100%"}
           as={Flex}
-          maxW={"container.xl"}
+          maxW={"container.brand"}
         >
           <Logo />
           <ColorModeToggle />

@@ -19,7 +19,7 @@ export function Chakra({
       : localStorageManager;
 
   return (
-    <ChakraProvider colorModeManager={colorModeManager} theme={theme}>
+    <ChakraProvider  colorModeManager={colorModeManager} theme={theme}>
       {children}
     </ChakraProvider>
   );
