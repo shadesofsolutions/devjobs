@@ -1,9 +1,19 @@
 import React from "react";
-import { Box, Container, Flex, Heading } from "@chakra-ui/react";
+import {
+  Avatar,
+  Box,
+  Container,
+  Flex,
+  Heading,
+  SkeletonCircle,
+} from "@chakra-ui/react";
 import ColorModeToggle from "../ColorModeToggle";
 import { Logo } from "../icons";
+import { useUser } from "@auth0/nextjs-auth0";
 
 function MainLayout({ children }: { children: React.ReactNode }) {
+  const { user, isLoading, error } = useUser();
+
   return (
     <Box>
       <Flex
@@ -19,10 +29,18 @@ function MainLayout({ children }: { children: React.ReactNode }) {
           justifyContent={"space-between"}
           width={"100%"}
           as={Flex}
+          minH={"160px"}
           maxW={"container.brand"}
         >
           <Logo />
+          <Flex gap={"10px"} alignItems={"center"}>
           <ColorModeToggle />
+          {user && (
+            <SkeletonCircle height={"fit-content"} isLoaded={!isLoading}>
+              <Avatar src={user?.picture || ""} name={user?.name || ""} />
+            </SkeletonCircle>
+          )}
+          </Flex>
         </Container>
       </Flex>
       {children}

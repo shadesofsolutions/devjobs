@@ -13,6 +13,7 @@ import React from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { ICompanyInfo } from "../../_types";
+import { useRouter } from "next/router";
 
 dayjs.extend(relativeTime);
 
@@ -57,6 +58,7 @@ const jobCardStyle: BoxProps = {
 };
 
 function JobCard({
+  id,
   company_info,
   createdAt,
   employment_type,
@@ -65,8 +67,9 @@ function JobCard({
 }: IJobCardProps) {
   const cardBg = useColorModeValue("#fff", "primary.very-dark-blue");
   const { company_logo, company_name, company_brand_color } = company_info;
+  const router = useRouter()
   return (
-    <Box bgColor={cardBg} {...jobCardStyle}>
+    <Box onClick={()=> router.push(`/joblisting/${id}`)} cursor={"pointer"} bgColor={cardBg} {...jobCardStyle}>
       <Avatar
         bgColor={company_brand_color}
         name={company_name}

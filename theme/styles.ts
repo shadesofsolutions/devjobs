@@ -1,3 +1,4 @@
+/* eslint-disable import/no-anonymous-default-export */
 import { mode, StyleFunctionProps } from "@chakra-ui/theme-tools";
 
 export default {
