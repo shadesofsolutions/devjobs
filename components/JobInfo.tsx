@@ -23,12 +23,14 @@ function JobInfo({
       borderRadius={"6px"}
       my="30px"
       minH={"600px"}
-      p="100"
+      p={{ base:"20px", lg: "100px" }}
     >
       <Heading as="h1">{role}</Heading>
-      <Box my="20px" >
+      <Box my="20px">
         {tags?.map((tag) => (
-          <Tag key={v4()} mr="10px" my="5px">{tag}</Tag>
+          <Tag key={v4()} mr="10px" my="5px">
+            {tag}
+          </Tag>
         ))}
       </Box>
       <Box dangerouslySetInnerHTML={{ __html: text }} />
