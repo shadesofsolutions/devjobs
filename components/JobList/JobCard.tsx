@@ -9,11 +9,11 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import React from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { ICompanyInfo } from "../../_types";
-import { useRouter } from "next/router";
+import Link from "next/link";
+import { ICompanyInfo } from "../../types/_types";
+import NoSSR from "../NoSSR";
 
 dayjs.extend(relativeTime);
 
@@ -21,17 +21,10 @@ export interface IJobCardProps {
   id?: string;
   company_info: ICompanyInfo;
   job_title: string;
-  createdAt: string;
-  updatedAt: string;
+  postedAt: string;
   status: "open" | "closed";
-  annual_renumeration: number;
-  renumeration_currency: string;
-  renumeration_currency_symbol?: string;
-  equity_offer: number;
-  show_renumaration: boolean;
-  no_of_applicants?: number;
-  job_location: string;
-  employment_type: "part-time" | "full-time" | "contract";
+  job_location?: string;
+  employment_type: string;
 }
 
 const companyAvatarStyle: AvatarProps = {
@@ -51,7 +44,7 @@ const jobCardStyle: BoxProps = {
   flexGrow: "1",
   borderRadius: "6px",
   position: "relative",
-  minH: "228px",
+  minH: "270px",
   display: "flex",
   flexFlow: "column",
   minW: { base: "auto", md: "345px", lg: "auto" },
@@ -60,18 +53,24 @@ const jobCardStyle: BoxProps = {
 function JobCard({
   id,
   company_info,
-  createdAt,
+  postedAt,
   employment_type,
   job_title,
   job_location,
 }: IJobCardProps) {
   const cardBg = useColorModeValue("#fff", "primary.very-dark-blue");
   const { company_logo, company_name, company_brand_color } = company_info;
-  const router = useRouter()
+
   return (
-    <Box onClick={()=> router.push(`/joblisting/${id}`)} cursor={"pointer"} bgColor={cardBg} {...jobCardStyle}>
+    <Box
+      as={Link}
+      href={`/joblisting/${id}`}
+      cursor={"pointer"}
+      bgColor={cardBg}
+      {...jobCardStyle}
+    >
       <Avatar
-        bgColor={company_brand_color}
+        bgColor={company_brand_color || "orange"}
         name={company_name}
         src={company_logo}
         {...companyAvatarStyle}
@@ -80,10 +79,30 @@ function JobCard({
       />
       <Box mt="24px">
         <Text>
-          <Text as="span">{dayjs().to(dayjs(createdAt))}</Text>.
+          <NoSSR>
+            <Text as="span">{dayjs().to(dayjs(postedAt))}</Text>
+          </NoSSR>
+
+          <Text
+            display={"inline-block"}
+            as="span"
+            mx="10px"
+            w={"5px"}
+            h="5px"
+            borderRadius={"100%"}
+            bgColor={"secondary.dark-grey"}
+          ></Text>
           <Text as="span">{employment_type}</Text>
         </Text>
-        <Heading my="16px" as="h3" size="md">
+        <Heading
+          my="16px"
+          as="h3"
+          size="md"
+          maxHeight={"72px"}
+          overflow={"hidden"}
+          textOverflow={"ellipsis"}
+          className="clamped"
+        >
           {job_title}
         </Heading>
         <Text>{company_name}</Text>

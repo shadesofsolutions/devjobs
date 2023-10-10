@@ -1,19 +1,76 @@
-import { Box, Flex, Heading } from "@chakra-ui/react";
-import type { NextPage } from "next";
+import { Box, Button, Flex } from "@chakra-ui/react";
+import {
+  DehydratedState,
+  QueryClient,
+  dehydrate,
+  useQuery,
+} from "@tanstack/react-query";
+import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import React from "react";
-import FilterBox, { IFilterValue } from "../components/FilterBox";
-import JobList from "../components/JobList/JobList";
+import FilterBox from "../components/FilterBox";
+import JobList, { LoadingJobList } from "../components/JobList/JobList";
+import LoadingOrError from "../components/LoadingOrError";
 import MainLayout from "../components/layouts/MainLayout";
+import { IFindJobRequestPayload, findJobs } from "../services/findjob.service";
 import styles from "../styles/Home.module.css";
-import { PageWithLayout } from "../_types";
+import type { Indexable, PageWithLayout } from "../types/_types";
+import { getPageQuery, objectToQueryString } from "../utils";
+import { useRouter } from "next/router";
+import { isEqual } from "lodash";
+import { parse } from "url";
 
-const Home: NextPage & PageWithLayout = () => {
-  const [filterVal, setFilterVal] = React.useState<IFilterValue>({
+const Home: NextPage<{ queryFilters: IFindJobRequestPayload }> &
+  PageWithLayout = ({ queryFilters }) => {
+  const [filterVal, setFilterVal] = React.useState<IFindJobRequestPayload>({
     location: "",
-    query: "",
-    isFullTime: false,
+    search: "",
+    employment_type: "",
+    ...queryFilters,
   });
+
+  const { data, isError, isLoading, error } = useQuery({
+    queryKey: ["Job", filterVal],
+    queryFn: () => findJobs(filterVal),
+  });
+
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (
+      !isEqual(router.query, { ...filterVal, page: filterVal?.page?.toFixed() })
+    ) {
+      console.log("updated");
+      router?.push({
+        pathname: router.pathname,
+        query: filterVal as unknown as Record<string, any>,
+      });
+    }
+  }, [filterVal, router]);
+
+  const handleNext = () => {
+    if (data?.next) {
+      const parsedUrl = parse(data?.next, true);
+      setFilterVal((prev) => ({
+        ...prev,
+        page: parseInt(
+          (parsedUrl.query?.page as string) || filterVal?.page?.toFixed()
+        ),
+      }));
+    }
+  };
+
+  const handlePrevious = () => {
+    if (data?.previous) {
+      const parsedUrl = parse(data?.previous, true);
+      setFilterVal((prev) => ({
+        ...prev,
+        page: parseInt(
+          (parsedUrl.query?.page as string) || filterVal?.page?.toFixed()
+        ),
+      }));
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -29,12 +86,67 @@ const Home: NextPage & PageWithLayout = () => {
             setFilterVal(value);
           }}
           mt="-40px"
-        
         />
-        <JobList />
+        {isLoading || isError ? (
+          <LoadingOrError
+            error={error as Error}
+            loadingComponent={<LoadingJobList />}
+          />
+        ) : (
+          <JobList jobs={data?.results || []} />
+        )}
       </Box>
+      <Flex
+        justifyContent={"center"}
+        mx="auto"
+        my="40px"
+        width="100%"
+        maxW="300px"
+      >
+        {data?.previous && (
+          <Button
+            borderRight={"1px"}
+            borderRadius={0}
+            minW={"100px"}
+            width={"50%"}
+            onClick={handlePrevious}
+          >
+            Previous (pg {filterVal?.page - 1})
+          </Button>
+        )}
+        {data?.next && (
+          <Button
+            borderRadius={0}
+            minW={"100px"}
+            width={"50%"}
+            onClick={handleNext}
+          >
+            Next (pg {filterVal?.page + 1})
+          </Button>
+        )}
+      </Flex>
     </div>
   );
+};
+
+export const getServerSideProps: GetServerSideProps<{
+  dehydratedState: DehydratedState;
+  queryFilters: IFindJobRequestPayload;
+}> = async (context) => {
+  const queryFilters = getPageQuery(context.query);
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery({
+    queryKey: ["Job", queryFilters],
+    queryFn: () => findJobs(queryFilters),
+  });
+
+  return {
+    props: {
+      dehydratedState: dehydrate(queryClient),
+      queryFilters,
+    },
+  };
 };
 
 Home.layout = MainLayout;

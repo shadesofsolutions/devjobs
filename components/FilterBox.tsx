@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Checkbox,
   Container,
@@ -6,34 +7,28 @@ import {
   Flex,
   Heading,
   Icon,
+  IconButton,
   Input,
   InputGroup,
   InputLeftElement,
-  useColorModeValue,
-  useBreakpointValue,
   InputRightElement,
-  IconButton,
-  ModalOverlay,
-  ModalContent,
   Modal,
-  useDisclosure,
+  ModalContent,
   ModalFooter,
-  Box,
+  ModalOverlay,
+  useBreakpointValue,
+  useColorModeValue,
+  useDisclosure,
 } from "@chakra-ui/react";
-import React, { EventHandler } from "react";
-import { BsSearch, BsPinMap } from "react-icons/bs";
+import React from "react";
+import { BsSearch } from "react-icons/bs";
 import { FaFilter } from "react-icons/fa";
 import { SiGooglemaps } from "react-icons/si";
-
-export interface IFilterValue {
-  query?: string;
-  location?: string;
-  isFullTime?: boolean;
-}
+import { IFindJobRequestPayload } from "../services/findjob.service";
 
 interface IFilterProps {
-  onChange: (value: IFilterValue) => void;
-  filterValue: IFilterValue;
+  onChange: (value: IFindJobRequestPayload) => void;
+  filterValue: IFindJobRequestPayload;
   mt?: any;
 }
 
@@ -66,7 +61,7 @@ const useFilterMethods = ({ filterValue, onChange }: IFilterProps) => {
     const { value, name, checked } = e.target;
     onChange({
       ...filterValue,
-      [name]: name === "isFullTime" ? checked : value,
+      [name]: name === "employment_type" ? (checked ? "full time" : "") : value,
     });
   }
   return {
@@ -95,8 +90,8 @@ function FilterBox({ onChange, filterValue, mt }: IFilterProps) {
               <Icon color="primary.violet" as={BsSearch} />
             </InputLeftElement>
             <Input
-              value={filterValue?.query}
-              name="query"
+              value={filterValue?.search}
+              name="search"
               onChange={handleChange}
               placeholder="Filter by title, companies, expertise…"
               border={"none"}
@@ -119,8 +114,8 @@ function FilterBox({ onChange, filterValue, mt }: IFilterProps) {
           <Flex px="10px" flexShrink={0} alignItems={"center"}>
             <Checkbox
               onChange={handleChange}
-              isChecked={filterValue?.isFullTime}
-              name="isFulltime"
+              isChecked={filterValue.employment_type === "full time"}
+              name="employment_type"
             >
               <Heading mr="15px" fontSize={"16px"}>
                 {" "}
@@ -144,8 +139,8 @@ function MobileFilter({ filterValue, mt, onChange }: IFilterProps) {
     <FilterBoxWrapper mt={mt}>
       <InputGroup>
         <Input
-          value={filterValue?.query}
-          name="query"
+          value={filterValue?.search}
+          name="search"
           onChange={handleChange}
           placeholder="Filter by title, companies, expertise…"
           border={"none"}
@@ -190,8 +185,8 @@ function MobileFilter({ filterValue, mt, onChange }: IFilterProps) {
           <Divider />
           <Checkbox
             onChange={handleChange}
-            isChecked={filterValue?.isFullTime}
-            name="isFulltime"
+            isChecked={filterValue.employment_type === "full time"}
+            name="employment_type"
             my="24px"
             px="24px"
           >

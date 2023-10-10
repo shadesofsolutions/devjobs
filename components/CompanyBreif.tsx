@@ -1,6 +1,6 @@
 import React from "react";
-import { ICompanyInfo } from "../_types";
-import { Box, Button, Flex, Heading, Text } from "@chakra-ui/react";
+import { ICompanyInfo } from "../types/_types";
+import { Avatar, Box, Button, Flex, Heading, Text } from "@chakra-ui/react";
 
 const CompanyBreif = ({
   company_logo,
@@ -18,20 +18,19 @@ const CompanyBreif = ({
     flexFlow={{ base: "column", sm: "row" }}
     textAlign={{ base: "center", sm: "left" }}
   >
-    <Flex
-      justifyContent={"center"}
-      alignItems="center"
+    <Avatar
       height={{ base: "50px", sm: "140px" }}
       width={{ base: "50px", sm: "140px" }}
       borderRadius={{ base: "15px", sm: "0px" }}
-      bg={company_brand_color}
+      bgColor={company_brand_color || "orange"}
+      name={company_name}
+      src={company_logo}
+      color="#fff"
+      fontSize={"14px"}
       flexShrink={0}
       marginTop={{ base: "-25px", sm: "0px" }}
-    >
-      <Text fontSize={{ base: "5px", sm: "16px" }} color="#fff">
-        {company_logo}
-      </Text>
-    </Flex>
+    />
+
     <Flex
       px="10"
       py="4"
@@ -47,8 +46,13 @@ const CompanyBreif = ({
         <Text>{company_website}</Text>
       </Box>
       <Box>
-        <Button color="primary.violet" variant={"secondary"}>
-          Company Site
+        <Button
+          as="a"
+          href={company_website}
+          color="primary.violet"
+          variant={"secondary"}
+        >
+          Apply
         </Button>
       </Box>
     </Flex>

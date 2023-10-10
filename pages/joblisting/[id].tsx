@@ -1,26 +1,48 @@
-import { Box, Button, Container, Flex, Heading, Text } from "@chakra-ui/react";
-import type {
-  GetStaticPaths,
-  GetStaticProps,
-  NextApiRequest,
-  NextPage,
-} from "next";
+import { Box, Button, Container, Heading, Text } from "@chakra-ui/react";
+import {
+  DehydratedState,
+  QueryClient,
+  dehydrate,
+  useQuery,
+} from "@tanstack/react-query";
+import type { GetServerSideProps, NextPage } from "next";
 import CompanyBreif from "../../components/CompanyBreif";
-import { baseUrl, fetcher } from "../../components/hooks/useRequest";
 import JobInfo from "../../components/JobInfo";
-import { IJobCardProps } from "../../components/JobList/JobCard";
+import LoadingOrError from "../../components/LoadingOrError";
+import SEO from "../../components/Seo";
 import MainLayout from "../../components/layouts/MainLayout";
-import { serverUrl } from "../../utils";
-import { ICompanyInfo, PageWithLayout } from "../../_types";
+import { findSingleJob } from "../../services/findjob.service";
+import { PageWithLayout } from "../../types/_types";
 
-const ListingPage: NextPage<IJobCardProps> & PageWithLayout = ({
-  company_info,
-}) => {
+const ListingPage: NextPage<{ id: string }> & PageWithLayout = ({ id }) => {
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["singleJob", id],
+    queryFn: () => findSingleJob(id),
+  });
+
+  if (isLoading || isError) {
+    return (
+      <Container maxW={"container.md"}>
+        <LoadingOrError error={error as Error} />
+      </Container>
+    );
+  }
   return (
     <>
+      <SEO
+        title={`${data?.company_name} - ${data.role}`}
+        keywords={data?.keywords?.join(",")}
+        description={`${data?.role} at ${data?.company_name}`}
+        page_url={`joblisting/${id}`}
+        image={data?.logo}
+      />
       <Container maxW={"container.md"}>
-        <CompanyBreif {...company_info} />
-        <JobInfo />
+        <CompanyBreif
+          company_logo={data.logo}
+          company_name={data.company_name}
+          company_website={data.url}
+        />
+        <JobInfo text={data?.text} tags={data?.keywords} role={data?.role} />
       </Container>
       <Box
         _light={{
@@ -40,11 +62,17 @@ const ListingPage: NextPage<IJobCardProps> & PageWithLayout = ({
           py="20px"
         >
           <Box display={{ base: "none", sm: "block" }}>
-            <Heading size="sm">{company_info?.company_name}</Heading>
-            <Text>{company_info?.company_website}</Text>
+            <Heading size="sm">{data?.company_name}</Heading>
+            <Text>{data?.url}</Text>
           </Box>
           <Box width={{ base: "100%", sm: "auto" }}>
-            <Button width={{ base: "100%", sm: "auto" }}>Apply Now</Button>
+            <Button
+              as="a"
+              href={data?.url}
+              width={{ base: "100%", sm: "auto" }}
+            >
+              Apply Now
+            </Button>
           </Box>
         </Container>
       </Box>
@@ -56,35 +84,21 @@ ListingPage.layout = MainLayout;
 
 export default ListingPage;
 
-const getJobListingIds = async () => {
-  const jobs = await fetcher<IJobCardProps[]>(`${serverUrl}${baseUrl}`);
-  const paths = jobs?.map((job) => ({
-    params: {
-      id: job?.id,
-    },
-  }));
+export const getServerSideProps: GetServerSideProps<{
+  dehydratedState: DehydratedState;
+  id: string;
+}> = async (context) => {
+  const queryClient = new QueryClient();
 
-  return paths;
-};
-
-export const getStaticPaths: GetStaticPaths = async () => {
-  const paths = await getJobListingIds();
-  // Return a list of possible value for id
-  return { paths, fallback: false };
-};
-
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-  // Fetch necessary data for the blog post using params.id
-  const jobs = await fetcher<IJobCardProps[]>(`${serverUrl}${baseUrl}`);
-  const jobInfo = jobs.find((job) => job.id === params?.id);
-
-  if (!jobInfo) {
-    return {
-      notFound: true,
-    };
-  }
+  await queryClient.prefetchQuery({
+    queryKey: ["singleJob", context.params?.id],
+    queryFn: () => findSingleJob(context.params?.id as string),
+  });
 
   return {
-    props: jobInfo,
+    props: {
+      dehydratedState: dehydrate(queryClient),
+      id: context?.params?.id as string,
+    },
   };
 };
