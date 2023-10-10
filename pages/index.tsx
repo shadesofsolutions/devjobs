@@ -5,20 +5,20 @@ import {
   dehydrate,
   useQuery,
 } from "@tanstack/react-query";
+import { isEqual } from "lodash";
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import React from "react";
+import { parse } from "url";
 import FilterBox from "../components/FilterBox";
 import JobList, { LoadingJobList } from "../components/JobList/JobList";
 import LoadingOrError from "../components/LoadingOrError";
 import MainLayout from "../components/layouts/MainLayout";
 import { IFindJobRequestPayload, findJobs } from "../services/findjob.service";
 import styles from "../styles/Home.module.css";
-import type { Indexable, PageWithLayout } from "../types/_types";
-import { getPageQuery, objectToQueryString } from "../utils";
-import { useRouter } from "next/router";
-import { isEqual } from "lodash";
-import { parse } from "url";
+import type { PageWithLayout } from "../types/_types";
+import { getPageQuery } from "../utils";
 
 const Home: NextPage<{ queryFilters: IFindJobRequestPayload }> &
   PageWithLayout = ({ queryFilters }) => {

@@ -1,15 +1,15 @@
-import React from "react";
+import { useUser } from "@auth0/nextjs-auth0";
 import {
   Avatar,
   Box,
   Container,
   Flex,
-  Heading,
-  SkeletonCircle,
+  SkeletonCircle
 } from "@chakra-ui/react";
+import Link from "next/link";
+import React from "react";
 import ColorModeToggle from "../ColorModeToggle";
 import { Logo } from "../icons";
-import { useUser } from "@auth0/nextjs-auth0";
 
 function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, error } = useUser();
@@ -32,14 +32,17 @@ function MainLayout({ children }: { children: React.ReactNode }) {
           minH={"160px"}
           maxW={"container.brand"}
         >
-          <Logo />
+          <Link href={"/"}>
+            <Logo />
+          </Link>
+
           <Flex gap={"10px"} alignItems={"center"}>
-          <ColorModeToggle />
-          {user && (
-            <SkeletonCircle height={"fit-content"} isLoaded={!isLoading}>
-              <Avatar src={user?.picture || ""} name={user?.name || ""} />
-            </SkeletonCircle>
-          )}
+            <ColorModeToggle />
+            {user && (
+              <SkeletonCircle height={"fit-content"} isLoaded={!isLoading}>
+                <Avatar src={user?.picture || ""} name={user?.name || ""} />
+              </SkeletonCircle>
+            )}
           </Flex>
         </Container>
       </Flex>
