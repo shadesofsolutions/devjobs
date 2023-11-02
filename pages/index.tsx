@@ -1,12 +1,9 @@
 import { Box, Button, Flex } from "@chakra-ui/react";
 import {
-  DehydratedState,
-  QueryClient,
-  dehydrate,
-  useQuery,
+  useQuery
 } from "@tanstack/react-query";
 import { isEqual } from "lodash";
-import type { GetServerSideProps, NextPage } from "next";
+import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React from "react";
@@ -18,7 +15,6 @@ import MainLayout from "../components/layouts/MainLayout";
 import { IFindJobRequestPayload, findJobs } from "../services/findjob.service";
 import styles from "../styles/Home.module.css";
 import type { PageWithLayout } from "../types/_types";
-import { getPageQuery } from "../utils";
 
 const Home: NextPage<{ queryFilters: IFindJobRequestPayload }> &
   PageWithLayout = ({ queryFilters }) => {
@@ -27,6 +23,7 @@ const Home: NextPage<{ queryFilters: IFindJobRequestPayload }> &
     search: "",
     employment_type: "",
     ...queryFilters,
+    page: queryFilters?.page ? Number(queryFilters?.page) : 1,
   });
 
   const { data, isError, isLoading, error } = useQuery({
@@ -37,10 +34,16 @@ const Home: NextPage<{ queryFilters: IFindJobRequestPayload }> &
   const router = useRouter();
 
   React.useEffect(() => {
+    console.log({
+      query: router.query,
+      filterVal: { ...filterVal, page: filterVal?.page?.toFixed() },
+    });
     if (
-      !isEqual(router.query, { ...filterVal, page: filterVal?.page?.toFixed() })
+      !isEqual(router.query, {
+        ...filterVal,
+        page: filterVal?.page?.toFixed() || "1",
+      })
     ) {
-      console.log("updated");
       router?.push({
         pathname: router.pathname,
         query: filterVal as unknown as Record<string, any>,
@@ -129,25 +132,25 @@ const Home: NextPage<{ queryFilters: IFindJobRequestPayload }> &
   );
 };
 
-export const getServerSideProps: GetServerSideProps<{
-  dehydratedState: DehydratedState;
-  queryFilters: IFindJobRequestPayload;
-}> = async (context) => {
-  const queryFilters = getPageQuery(context.query);
-  const queryClient = new QueryClient();
+// export const getServerSideProps: GetServerSideProps<{
+//   dehydratedState: DehydratedState;
+//   queryFilters: IFindJobRequestPayload;
+// }> = async (context) => {
+//   const queryFilters = getPageQuery(context.query);
+//   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery({
-    queryKey: ["Job", queryFilters],
-    queryFn: () => findJobs(queryFilters),
-  });
+//   await queryClient.prefetchQuery({
+//     queryKey: ["Job", queryFilters],
+//     queryFn: () => findJobs(queryFilters),
+//   });
 
-  return {
-    props: {
-      dehydratedState: dehydrate(queryClient),
-      queryFilters,
-    },
-  };
-};
+//   return {
+//     props: {
+//       dehydratedState: dehydrate(queryClient),
+//       queryFilters,
+//     },
+//   };
+// };
 
 Home.layout = MainLayout;
 export default Home;
